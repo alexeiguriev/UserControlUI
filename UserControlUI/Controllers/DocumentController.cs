@@ -25,19 +25,20 @@ namespace UserControlUI.Controllers
             }
             return View(users);
         }
-        ////Create document methode
-        //public async Task<IActionResult> Create()
-        //{
-        //    List<DocumentDTO> users = new List<DocumentDTO>();
-        //    HttpClient client = _api.Initial();
-        //    HttpResponseMessage res = await client.GetAsync("api/Document");
-        //    if (res.IsSuccessStatusCode)
-        //    {
-        //        var result = res.Content.ReadAsStringAsync().Result;
-        //        users = JsonConvert.DeserializeObject<List<DocumentDTO>>(result);
-        //    }
-        //    return View(users);
-        //}
+        //Create document methode
+        public async Task<IActionResult> Create()
+        {
+            //List<DocumentDTO> users = new List<DocumentDTO>();
+            //HttpClient client = _api.Initial();
+            //HttpResponseMessage res = await client.GetAsync("api/Document");
+            //if (res.IsSuccessStatusCode)
+            //{
+            //    var result = res.Content.ReadAsStringAsync().Result;
+            //    users = JsonConvert.DeserializeObject<List<DocumentDTO>>(result);
+            //}
+            //return View(users);
+            return View();
+        }
 
     }
 }
