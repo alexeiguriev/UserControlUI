@@ -17,6 +17,9 @@
             <thead>
                 <tr>
                     <th>
+                        Id
+                    </th>
+                    <th>
                         First Name
                     </th>
                     <th>
@@ -29,7 +32,8 @@
                 @foreach(var obj in Model)
                 {
                 <tr>
-                    <td width="50%"> @obj.FirstName </td>
+                    <td width="10%"> @obj.Id </td>
+                    <td width="40%"> @obj.FirstName </td>
                     <td width="30%"> @obj.LastName </td>
                     <td> </td>
                 </tr>
