@@ -38,15 +38,14 @@ namespace UserControlUI.Controllers
             UserInput responseObj = new UserInput();
 
             HttpClient client = _api.Initial();
-            
+
             // Setting content type.                   
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            //client.DefaultRequestHeaders
 
             // Initialization.  
             HttpResponseMessage response = new HttpResponseMessage();
 
-            // HTTP POST  
+            // HTTP POST
             response = await client.PostAsJsonAsync("api/User", user).ConfigureAwait(false);
 
             // Verification  
