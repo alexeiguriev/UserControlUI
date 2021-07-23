@@ -1,12 +1,20 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
 using UserControlUI.Helper;
+using UserControlUI.Models;
 using UserControlUI.ModelsDTO;
 
 namespace UserControlUI.Controllers
@@ -14,16 +22,20 @@ namespace UserControlUI.Controllers
     public class UsersController : Controller
     {
         UserAPI _api = new UserAPI();
+        private readonly JWTSettings _jwtsettings;
+        public UsersController(IOptions<JWTSettings> jwtsettings)
+        {
+            _jwtsettings = jwtsettings.Value;
+        }
+
+
         public async Task<IActionResult> Index()
         {
             List<UserDTO> users = new List<UserDTO>();
-            HttpClient client = _api.Initial(); 
-            //client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "alexeiguriev1@gmail.com:testpass");
-            //client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", "alexeiguriev1@gmail.com:testpass");
-            //client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", "encrypted user/pwd");
-            //client.DefaultRequestHeaders.Add("Authorization", "Basic " + "alexeiguriev1@gmail.com:testpass");
-            //client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "Basic " + "alexeiguriev1@gmail.com:testpass");
-            //client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", "alexeiguriev1@gmail.com:testpass");
+            HttpClient client = _api.Initial();
+
+            client.DefaultRequestHeaders.Add("Auth", "Basic alexeiguriev1@gmail.com:testpass");
+
             HttpResponseMessage res = await client.GetAsync("api/User");
             if (res.IsSuccessStatusCode)
             {

@@ -2,3 +2,6 @@ https://youtu.be/Pi46L7UYP8I?t=5167
 
 Code example
 https://drive.google.com/drive/folders/1xHH91z1XHzs5u2aD4ihA96RGJVceNdUH
+
+jwt authorization example
+https://www.youtube.com/watch?v=rn2gp5VNGKI&t=951s&ab_channel=CuriousDrive
