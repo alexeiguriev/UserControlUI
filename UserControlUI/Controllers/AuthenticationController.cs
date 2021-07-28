@@ -24,7 +24,32 @@ namespace UserControlUI.Controllers
         [HttpPost]
         public async Task<ActionResult> Login(LoginUser loginUser)
         {
-            return View();
+            HttpClient client = _api.Initial();
+
+            // Setting content type.
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+            // Initialization.
+            HttpResponseMessage response = new HttpResponseMessage();
+
+            // HTTP POST
+            response = await client.PostAsJsonAsync("api/login", loginUser).ConfigureAwait(false);
+
+
+            var cookieContainer = new CookieContainer();
+            List<Cookie> cookies = cookieContainer.GetCookies(client.BaseAddress).Cast<Cookie>().ToList();
+
+
+            // Verification
+            if (response.IsSuccessStatusCode)
+            {
+                // Reading Response.
+                string result = response.Content.ReadAsStringAsync().Result;
+
+                // Reading Response.
+                return RedirectToAction("Index","Home");
+            }
+            return RedirectToAction("Login", "Authentication");
         }
         public IActionResult Register()
         {
@@ -34,9 +59,6 @@ namespace UserControlUI.Controllers
         [HttpPost]
         public async Task<ActionResult> Register(UserInput user)
         {
-            // Initialization.  
-            UserInput responseObj = new UserInput();
-
             HttpClient client = _api.Initial();
 
             // Setting content type.                   
@@ -53,7 +75,6 @@ namespace UserControlUI.Controllers
             {
                 // Reading Response.  
                 string result = response.Content.ReadAsStringAsync().Result;
-                responseObj = JsonConvert.DeserializeObject<UserInput>(result);
             }
             return RedirectToAction("Login", "Authentication");
         }

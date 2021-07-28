@@ -37,12 +37,16 @@ namespace UserControlUI.Controllers
             client.DefaultRequestHeaders.Add("Auth", "Basic alexeiguriev1@gmail.com:testpass");
 
             HttpResponseMessage res = await client.GetAsync("api/User");
+            if (res.StatusCode == HttpStatusCode.Unauthorized)
+            {
+                return RedirectToAction("Login", "Authentication");
+            }
             if (res.IsSuccessStatusCode)
             {
                 var result = res.Content.ReadAsStringAsync().Result;
                 users = JsonConvert.DeserializeObject<List<UserDTO>>(result);
             }
-            return View(users);
+            return View("");
         }
     }
 }
