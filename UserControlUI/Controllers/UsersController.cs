@@ -34,7 +34,7 @@ namespace UserControlUI.Controllers
             List<UserDTO> users = new List<UserDTO>();
             HttpClient client = _api.Initial();
 
-            client.DefaultRequestHeaders.Add("Auth", "Basic alexeiguriev1@gmail.com:testpass");
+            //client.DefaultRequestHeaders.Add("Auth", "Basic alexeiguriev1@gmail.com:testpass");
 
             HttpResponseMessage res = await client.GetAsync("api/User");
             if (res.StatusCode == HttpStatusCode.Unauthorized)
@@ -46,7 +46,7 @@ namespace UserControlUI.Controllers
                 var result = res.Content.ReadAsStringAsync().Result;
                 users = JsonConvert.DeserializeObject<List<UserDTO>>(result);
             }
-            return View("");
+            return View(users);
         }
     }
 }
