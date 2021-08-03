@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using HelperCSharp;
+using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -24,6 +25,8 @@ namespace UserControlUI.Controllers
         [HttpPost]
         public async Task<ActionResult> Login(LoginUser loginUser)
         {
+            loginUser.Password = Crypt.EncodePasswordToBase64(loginUser.Password);
+
             HttpClient client = _api.Initial();
 
             // Setting content type.
@@ -59,6 +62,7 @@ namespace UserControlUI.Controllers
         [HttpPost]
         public async Task<ActionResult> Register(UserInput user)
         {
+            user.Password = Crypt.EncodePasswordToBase64(user.Password);
             HttpClient client = _api.Initial();
 
             // Setting content type.                   
