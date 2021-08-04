@@ -23,9 +23,9 @@ namespace UserControlUI.Controllers
             return View();
         }
         [HttpPost]
-        public async Task<ActionResult> Login(LoginUser loginUser)
+        public async Task<ActionResult> Login(UserInput loginInput)
         {
-            loginUser.Password = Crypt.EncodePasswordToBase64(loginUser.Password);
+            loginInput.Password = Crypt.EncodePasswordToBase64(loginInput.Password);
 
             HttpClient client = _api.Initial();
 
@@ -36,7 +36,7 @@ namespace UserControlUI.Controllers
             HttpResponseMessage response = new HttpResponseMessage();
 
             // HTTP POST
-            response = await client.PostAsJsonAsync("api/login", loginUser).ConfigureAwait(false);
+            response = await client.PostAsJsonAsync("api/login", loginInput).ConfigureAwait(false);
 
 
             var cookieContainer = new CookieContainer();
