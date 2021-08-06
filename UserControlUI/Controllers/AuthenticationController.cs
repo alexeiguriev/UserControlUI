@@ -38,10 +38,7 @@ namespace UserControlUI.Controllers
             // HTTP POST
             response = await client.PostAsJsonAsync("api/login", loginInput).ConfigureAwait(false);
 
-
-            var cookieContainer = new CookieContainer();
-            List<Cookie> cookies = cookieContainer.GetCookies(client.BaseAddress).Cast<Cookie>().ToList();
-
+            CookieStore.CookieValue = response.Headers.SingleOrDefault(header => header.Key == "Set-Cookie").Value.First();
 
             // Verification
             if (response.IsSuccessStatusCode)
@@ -73,6 +70,7 @@ namespace UserControlUI.Controllers
 
             // HTTP POST
             response = await client.PostAsJsonAsync("api/User", user).ConfigureAwait(false);
+
 
             // Verification  
             if (response.IsSuccessStatusCode)
