@@ -5,7 +5,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using UserControlUI.Data;
 using UserControlUI.Models;
+using UserControlUI.ModelsDTO;
 
 namespace UserControlUI.Controllers
 {
@@ -20,7 +22,7 @@ namespace UserControlUI.Controllers
 
         public IActionResult Index()
         {
-            return View();
+            return View(Auth.User);
         }
 
         public IActionResult Privacy()

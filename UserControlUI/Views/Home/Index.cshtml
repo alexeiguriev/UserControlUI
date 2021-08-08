@@ -1,16 +1,27 @@
-﻿@{
+﻿@model UserControlUI.ModelsDTO.UserDTO
+@{
     ViewData["Title"] = "Home Page";
 }
-
 <div class="text-center">
-
-    <div class="col">
-        <a asp-controller="Authentication" asp-action="Login" class="btn btn-primary"> Login</a>
-    </div>
-    <div class="col">
-        <a asp-controller="Authentication" asp-action="Register" class="btn btn-primary"> Register</a>
-    </div>
-    <div class="col">
-        <a asp-controller="Users" asp-action="Index" class="btn btn-primary"> Get users</a>
-    </div>
+    @if ((Model == null) || (Model.FirstName == null) || (Model.LastName == null))
+    {
+        <div class="col">
+            <a asp-controller="Authentication" asp-action="Login" class="btn btn-primary"> Login</a>
+        </div>
+        <div class="col">
+            <a asp-controller="Authentication" asp-action="Register" class="btn btn-primary"> Register</a>
+        </div>
+    }
+    else
+    {
+        <td>
+            Welcome, @Model.FirstName @Model.LastName
+        </td>
+        <div class="col">
+            <a asp-controller="Authentication" asp-action="Logout" class="btn btn-primary"> Logout</a>
+        </div>
+        <div class="col">
+            <a asp-controller="Users" asp-action="Index" class="btn btn-primary"> Get users</a>
+        </div>
+    }
 </div>

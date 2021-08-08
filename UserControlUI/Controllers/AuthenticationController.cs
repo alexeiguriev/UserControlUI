@@ -10,8 +10,11 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
+using UserControlUI.Data;
 using UserControlUI.Helper;
+using UserControlUI.Intercafes;
 using UserControlUI.Models;
+using UserControlUI.ModelsDTO;
 
 namespace UserControlUI.Controllers
 {
@@ -38,19 +41,43 @@ namespace UserControlUI.Controllers
             // HTTP POST
             response = await client.PostAsJsonAsync("api/login", loginInput).ConfigureAwait(false);
 
-            CookieStore.CookieValue = response.Headers.SingleOrDefault(header => header.Key == "Set-Cookie").Value.First();
-
             // Verification
             if (response.IsSuccessStatusCode)
             {
                 // Reading Response.
                 string result = response.Content.ReadAsStringAsync().Result;
 
+                //Get cookie
+                Auth.Cookie = response.Headers.SingleOrDefault(header => header.Key == "Set-Cookie").Value.First();
+
+                //get user
+                Auth.User = JsonConvert.DeserializeObject<UserDTO>(result);
+                
+
                 // Reading Response.
                 return RedirectToAction("Index","Home");
             }
             return RedirectToAction("Login", "Authentication");
         }
+        public async Task<ActionResult> Logout()
+        {
+            HttpClient client = _api.Initial();
+
+            // Initialization.
+            HttpResponseMessage response = new HttpResponseMessage();
+
+            // HTTP POST
+            response = await client.GetAsync("api/logout");
+
+            // Verification
+            if (response.IsSuccessStatusCode)
+            {
+                // Clear auth object
+                Auth.Clear();
+            }
+            return RedirectToAction("Index", "Home");
+        }
+
         public IActionResult Register()
         {
             return View();
@@ -68,6 +95,9 @@ namespace UserControlUI.Controllers
             // Initialization.  
             HttpResponseMessage response = new HttpResponseMessage();
 
+            //Set Cookie
+            client.DefaultRequestHeaders.Add("Cookie", Auth.Cookie);
+
             // HTTP POST
             response = await client.PostAsJsonAsync("api/User", user).ConfigureAwait(false);
 
@@ -80,25 +110,5 @@ namespace UserControlUI.Controllers
             }
             return RedirectToAction("Login", "Authentication");
         }
-        //[HttpPost]
-        //public async Task<ActionResult> Register(UserInput user)
-        //{
-        //    HttpClient client = _api.Initial();
-
-        //    //var jsonObject = JsonConvert.Serialize<UserInput>(user);
-
-        //    string jsonString = JsonConvert.SerializeObject(user);
-        //    HttpContent content = new StringContent(jsonString.ToString());
-
-        //    //HTTP POST
-        //    HttpResponseMessage resp = await client.PostAsync("api/User", content);
-
-        //    if (resp.IsSuccessStatusCode)
-        //    {
-        //        return RedirectToAction("Index");
-        //    }
-
-        //    return View(user);
-        //}
     }
 }

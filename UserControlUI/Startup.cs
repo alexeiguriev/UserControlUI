@@ -31,11 +31,7 @@ namespace UserControlUI
             var jwtSection = Configuration.GetSection("JWTSettings");
             services.Configure<JWTSettings>(jwtSection);
 
-            services.AddAuthentication("BasicAuthentication")
-                .AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>("BasicAuthentication", null);
-
-            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-                .AddCookie();
+            //services.AddScoped<Auth>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
