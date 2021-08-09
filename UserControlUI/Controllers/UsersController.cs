@@ -36,7 +36,13 @@ namespace UserControlUI.Controllers
             List<UserDTO> users = new List<UserDTO>();
             HttpClient client = _api.Initial();
 
-            client.DefaultRequestHeaders.Add("Cookie", Auth.Cookie);
+            //client.DefaultRequestHeaders.Add("Bearer", Auth.Cookie);
+            //client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(Auth.Cookie);
+            //client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Auth.Cookie);
+            //client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Auth.Cookie);
+            //client.DefaultRequestHeaders.Add("Authorization", Auth.Cookie);
+            client.DefaultRequestHeaders.Add("Authorization", "Bearer " + Auth.Cookie);
+            
 
             HttpResponseMessage res = await client.GetAsync("api/User");
             if (res.StatusCode == HttpStatusCode.Unauthorized)

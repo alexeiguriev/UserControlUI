@@ -9,6 +9,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Text.Json;
 using System.Threading.Tasks;
 using UserControlUI.Data;
 using UserControlUI.Helper;
@@ -35,23 +36,24 @@ namespace UserControlUI.Controllers
             // Setting content type.
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-            // Initialization.
-            HttpResponseMessage response = new HttpResponseMessage();
-
             // HTTP POST
-            response = await client.PostAsJsonAsync("api/login", loginInput).ConfigureAwait(false);
+            var authResult = await client.PostAsJsonAsync("api/login", loginInput).ConfigureAwait(false);
 
             // Verification
-            if (response.IsSuccessStatusCode)
+            if (authResult.IsSuccessStatusCode)
             {
+                var authContent = await authResult.Content.ReadAsStringAsync();
+
                 // Reading Response.
-                string result = response.Content.ReadAsStringAsync().Result;
+                var result = System.Text.Json.JsonSerializer.Deserialize<AuthenticatedUserModel>(
+                    authContent,
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
                 //Get cookie
-                Auth.Cookie = response.Headers.SingleOrDefault(header => header.Key == "Set-Cookie").Value.First();
+                Auth.Cookie = result.Access_Token;
 
                 //get user
-                Auth.User = JsonConvert.DeserializeObject<UserDTO>(result);
+                Auth.User = result.user;
                 
 
                 // Reading Response.
