@@ -39,6 +39,7 @@ namespace UserControlUI
                 options.Cookie.HttpOnly = true;
                 options.Cookie.IsEssential = true;
             });
+            services.AddAutoMapper(typeof(Startup));
             //services.AddScoped<Auth>();
         }
 

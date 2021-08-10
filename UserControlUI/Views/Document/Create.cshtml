@@ -1,26 +1,41 @@
-﻿@model UserControlUI.ModelsDTO.DocumentInputDTO
-
-@{
-    ViewData["Title"] = "Create";
-}
-
-<h1>Create</h1>
-
-<h4>DocumentInput</h4>
-<hr />
-<form asp-action="Create">
-    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-    <div>
-        @Html.TextBox("file", "", new { type = "file" }) <br />
-        <input type="submit" value="Create" class="btn btn-primary" />
-        @ViewBag.Message
+﻿<form method="post" enctype="multipart/form-data" asp-controller="Document" asp-action="Create">
+    <div class="form-group">
+        <div class="col-md-10">
+            <p>Upload File</p>
+            <input type="file" name="file"/>
+        </div>
+    </div>
+    <div class="form-group">
+        <input type="submit" value="Upload file"/>
+    </div>
+    <div class="form-group">
+        <span>@TempData["msg"]</span>
     </div>
 </form>
+@*@model UserControlUI.ModelsDTO.DocumentInputDTO
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
+    @{
+        ViewData["Title"] = "Create";
+    }
 
-@section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-}
+    <h1>Create</h1>
+
+    <h4>DocumentInput</h4>
+    <hr />
+    <form asp-action="Create">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <div>
+            @Html.TextBox("file", "", new { type = "file" }) <br />
+            <input type="submit" value="Create" class="btn btn-primary" />
+            @ViewBag.Message
+        </div>
+    </form>
+
+    <div>
+        <a asp-action="Index">Back to List</a>
+    </div>
+
+    @section Scripts {
+        @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    }*@
+
