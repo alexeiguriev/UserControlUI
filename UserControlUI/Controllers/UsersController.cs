@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -13,7 +14,6 @@ using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
-using UserControlUI.Data;
 using UserControlUI.Helper;
 using UserControlUI.Intercafes;
 using UserControlUI.Models;
@@ -36,7 +36,8 @@ namespace UserControlUI.Controllers
             List<UserDTO> users = new List<UserDTO>();
             HttpClient client = _api.Initial();
 
-            client.DefaultRequestHeaders.Add("Cookie", Auth.Cookie);
+            string accessCokie = HttpContext.Session.GetString("JWToken");
+            client.DefaultRequestHeaders.Add("Cookie", accessCokie);
 
             HttpResponseMessage res = await client.GetAsync("api/User");
             if (res.StatusCode == HttpStatusCode.Unauthorized)

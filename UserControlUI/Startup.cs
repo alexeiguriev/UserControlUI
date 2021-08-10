@@ -31,6 +31,14 @@ namespace UserControlUI
             var jwtSection = Configuration.GetSection("JWTSettings");
             services.Configure<JWTSettings>(jwtSection);
 
+            services.AddDistributedMemoryCache();
+
+            services.AddSession(options =>
+            {
+                options.IdleTimeout = TimeSpan.FromMinutes(20);
+                options.Cookie.HttpOnly = true;
+                options.Cookie.IsEssential = true;
+            });
             //services.AddScoped<Auth>();
         }
 
@@ -51,6 +59,8 @@ namespace UserControlUI
 
             app.UseAuthentication();
             app.UseAuthorization();
+
+            app.UseSession();
 
             app.UseEndpoints(endpoints =>
             {

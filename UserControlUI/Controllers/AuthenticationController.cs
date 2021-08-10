@@ -1,4 +1,5 @@
 ﻿using HelperCSharp;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System;
@@ -10,7 +11,6 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
-using UserControlUI.Data;
 using UserControlUI.Helper;
 using UserControlUI.Intercafes;
 using UserControlUI.Models;
@@ -48,10 +48,15 @@ namespace UserControlUI.Controllers
                 string result = response.Content.ReadAsStringAsync().Result;
 
                 //Get cookie
-                Auth.Cookie = response.Headers.SingleOrDefault(header => header.Key == "Set-Cookie").Value.First();
+                string cookie = response.Headers.SingleOrDefault(header => header.Key == "Set-Cookie").Value.First();
 
                 //get user
-                Auth.User = JsonConvert.DeserializeObject<UserDTO>(result);
+                UserDTO user = JsonConvert.DeserializeObject<UserDTO>(result);
+
+                HttpContext.Session.SetString("JWToken", cookie);
+
+                HttpContext.Session.SetInt32("UserId", user.Id);
+
                 
 
                 // Reading Response.
@@ -73,7 +78,7 @@ namespace UserControlUI.Controllers
             if (response.IsSuccessStatusCode)
             {
                 // Clear auth object
-                Auth.Clear();
+                HttpContext.Session.Clear();
             }
             return RedirectToAction("Index", "Home");
         }
@@ -96,7 +101,10 @@ namespace UserControlUI.Controllers
             HttpResponseMessage response = new HttpResponseMessage();
 
             //Set Cookie
-            client.DefaultRequestHeaders.Add("Cookie", Auth.Cookie);
+            string accessCokie = HttpContext.Session.GetString("JWToken");
+
+            // Add cookie to client
+            client.DefaultRequestHeaders.Add("Cookie", accessCokie);
 
             // HTTP POST
             response = await client.PostAsJsonAsync("api/User", user).ConfigureAwait(false);
