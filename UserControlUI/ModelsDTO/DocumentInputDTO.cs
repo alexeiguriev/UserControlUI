@@ -14,7 +14,6 @@ namespace UserControlUI.ModelsDTO
         public int Status { get; set; }
         public DateTime UploadedDate { get; set; }
         public int UpdatedByUserId { get; set; }
-        public string DeleteMe { get; set; }
         public FormFile file { get; set; }
     }
 }
