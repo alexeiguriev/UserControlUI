@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Json;
 using System.Threading.Tasks;
 using UserControlUI.Helper;
 using UserControlUI.ModelsDTO;
@@ -22,15 +23,25 @@ namespace UserControlUI.Controllers
         UserAPI _api = new UserAPI();
         public async Task<IActionResult> Index()
         {
-            List<DocumentDTO> users = new List<DocumentDTO>();
+            DocumentUserDTO documentsUser = new DocumentUserDTO();
+            List<DocumentDTO> documents = new List<DocumentDTO>();
+
+            // Get client
             HttpClient client = _api.Initial();
+
+            // Set token
+            string accessCokie = HttpContext.Session.GetString("JWToken");
+            client.DefaultRequestHeaders.Add("Cookie", accessCokie);
+
+            // Get Documents
             HttpResponseMessage res = await client.GetAsync("api/Document");
             if (res.IsSuccessStatusCode)
             {
                 var result = res.Content.ReadAsStringAsync().Result;
-                users = JsonConvert.DeserializeObject<List<DocumentDTO>>(result);
+                documentsUser.Document = JsonConvert.DeserializeObject<List<DocumentDTO>>(result);
+                documentsUser.User = await GetUser();
             }
-            return View(users);
+            return View(documentsUser);
         }
         public IActionResult Create()
         {
@@ -40,58 +51,88 @@ namespace UserControlUI.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(IFormFile file)
         {
-            //try
-            //{
-            //    if (file.ContentLength > 0)
-            //    {
-            //        string _FileName = Path.GetFileName(file.FileName);
-            //        string _path = Path.Combine(Server.MapPath("~/UploadedFiles"), _FileName);
-            //        file.SaveAs(_path);
-            //    }
-            //    ViewBag.Message = "File Uploaded Successfully!!";
-            //    return View();
-            //}
-            //catch
-            //{
-            //    ViewBag.Message = "File upload failed!!";
-            //    return View();
-            //}
-            return View();
-        }
-        public async Task<ActionResult> UploadFile(IFormFile file)
-        {
-            if (file != null)
+            // Convert iFormFile to InputDocument
+            InputDocument document = UploadFile(file);
+
+            // Get client
+            HttpClient client = _api.Initial();
+
+            // Set token
+            string accessCokie = HttpContext.Session.GetString("JWToken");
+            client.DefaultRequestHeaders.Add("Cookie", accessCokie);
+
+            // HTTP POST
+            var response = await client.PostAsJsonAsync("api/Document", document).ConfigureAwait(false);
+
+            // Check if success
+            if (response.IsSuccessStatusCode)
             {
-                // Check if file is in range
-                if ((file.Length > 0) || (file.Length < 10000000))
+                return RedirectToAction("Index");
+            }
+            return RedirectToAction("Login", "Authentication");
+        }
+        public InputDocument UploadFile(IFormFile file)
+        {
+            InputDocument document;
+            try
+            {
+                if (file != null)
                 {
-                    // Convert input data to InputDocument data type
-                    InputDocument storageDocument = _mapper.Map<InputDocument>((inputJSONString, file));
+                    // Check if file is in range
+                    if ((file.Length > 0) || (file.Length < 10000000))
+                    {
+                        // Convert input data to InputDocument data type
+                        document = _mapper.Map<InputDocument>((file));
 
-                    // Put on db new document
-                    var newDocument = await _uof.DocumentRepository.Create(storageDocument);
+                        // Set status
+                        document.Status = 1;
 
-                    // Map data convertion
-                    DocumentDTO documentDTO = _mapper.Map<DocumentDTO>(newDocument);
+                        // Get user Id from sesion
+                        int? id = HttpContext.Session.GetInt32("UserId");
 
-                    // Log the post data information
-                    _logger.LogInformation($"Post document: Name: {documentDTO.Name} ");
-
-                    //Return statuc
-                    return Ok(documentDTO);
+                        // Set user Id
+                        document.UpdaterId = (int)id;
+                    }
+                    else
+                    {
+                        document = null;
+                    }
                 }
                 else
                 {
-                    // File out of range
-                    return NotFound("File length out of range");
+                    document = null;
                 }
+                
             }
-            else
+            catch
             {
-                // File object is null
-                return NotFound("Wrong file: file is null");
+                document = null;
             }
+            return document;
         }
 
+        private async Task<UserDTO> GetUser()
+        {
+            UserDTO user = new UserDTO();
+            HttpClient client = _api.Initial();
+
+            // Get cookie from sesion
+            string accessCokie = HttpContext.Session.GetString("JWToken");
+            // Set client cookie
+            client.DefaultRequestHeaders.Add("Cookie", accessCokie);
+
+            // Get user Id from sesion
+            int? id = HttpContext.Session.GetInt32("UserId");
+
+            HttpResponseMessage res = await client.GetAsync("api/User/" + id);
+            if (res.IsSuccessStatusCode)
+            {
+                var result = res.Content.ReadAsStringAsync().Result;
+                user = JsonConvert.DeserializeObject<UserDTO>(result);
+            }
+            return user;
+
+        }
     }
+
 }

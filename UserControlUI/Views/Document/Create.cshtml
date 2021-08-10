@@ -12,30 +12,3 @@
         <span>@TempData["msg"]</span>
     </div>
 </form>
-@*@model UserControlUI.ModelsDTO.DocumentInputDTO
-
-    @{
-        ViewData["Title"] = "Create";
-    }
-
-    <h1>Create</h1>
-
-    <h4>DocumentInput</h4>
-    <hr />
-    <form asp-action="Create">
-        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-        <div>
-            @Html.TextBox("file", "", new { type = "file" }) <br />
-            <input type="submit" value="Create" class="btn btn-primary" />
-            @ViewBag.Message
-        </div>
-    </form>
-
-    <div>
-        <a asp-action="Index">Back to List</a>
-    </div>
-
-    @section Scripts {
-        @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-    }*@
-

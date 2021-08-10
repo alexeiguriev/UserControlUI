@@ -109,7 +109,6 @@ namespace UserControlUI.Controllers
             // HTTP POST
             response = await client.PostAsJsonAsync("api/User", user).ConfigureAwait(false);
 
-
             // Verification  
             if (response.IsSuccessStatusCode)
             {
