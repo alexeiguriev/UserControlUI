@@ -8,6 +8,7 @@ using Microsoft.Extensions.Hosting;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using UserControlUI.Handlers;
 using UserControlUI.Models;
@@ -39,6 +40,38 @@ namespace UserControlUI
                 options.Cookie.HttpOnly = true;
                 options.Cookie.IsEssential = true;
             });
+            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                .AddCookie(options => {
+                    options.LoginPath = "/login";
+                    options.AccessDeniedPath = "/denied";
+                    options.Events = new CookieAuthenticationEvents()
+                    {
+                        OnSignedIn = async context =>
+                        {
+                            //    var principal = context.Principal;
+                            //    if(principal.HasClaim(c=>c.Type == ClaimTypes.NameIdentifier))
+                            //    {
+                            //        if (principal.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value == "alexei")
+                            //        {
+                            //            var claimsIdentity = principal.Identity as ClaimsIdentity;
+                            //            claimsIdentity.AddClaim(new Claim(ClaimTypes.Role, "Admin"));
+                            //        }
+                            //    }
+                            await Task.CompletedTask;
+                        },
+                        OnSigningIn = async context =>
+                        {
+                            await Task.CompletedTask;
+                        },
+                        OnValidatePrincipal = async context =>
+                        {
+                            await Task.CompletedTask;
+                        }
+
+                    };
+                });
+
+            services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://localhost:3160") });
             services.AddAutoMapper(typeof(Startup));
             //services.AddScoped<Auth>();
         }

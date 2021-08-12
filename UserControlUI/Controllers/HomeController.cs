@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
@@ -8,6 +7,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using UserControlUI.Helper;
 using UserControlUI.Models;
@@ -17,25 +17,18 @@ namespace UserControlUI.Controllers
 {
     public class HomeController : Controller
     {
-        UserAPI _api = new UserAPI();
+        private readonly HttpClient _client;
         private readonly ILogger<HomeController> _logger;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(ILogger<HomeController> logger, HttpClient client)
         {
+            _client = client;
             _logger = logger;
         }
 
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
-            if (HttpContext.Session.GetInt32("UserId") != null)
-            {
-                UserDTO user = await GetUser();
-                return View(user);
-            }
-            else
-            {
-                return View(null);
-            }
+            return View();
         }
 
         public IActionResult Privacy()
@@ -51,17 +44,17 @@ namespace UserControlUI.Controllers
         private async Task<UserDTO> GetUser()
         {
             UserDTO user = new UserDTO();
-            HttpClient client = _api.Initial();
 
             // Get cookie from sesion
-            string accessCokie = HttpContext.Session.GetString("JWToken");
+            string accessCokie = ViewData["JWToken"] as string;
             // Set client cookie
-            client.DefaultRequestHeaders.Add("Cookie", accessCokie);
+            _client.DefaultRequestHeaders.Add("Cookie", accessCokie);
 
             // Get user Id from sesion
-            int? id = HttpContext.Session.GetInt32("UserId");
+            int id = Int32.Parse(ViewData["UserId"] as string);
 
-            HttpResponseMessage res = await client.GetAsync("api/User/" + id);
+
+            HttpResponseMessage res = await _client.GetAsync("api/User/" + id);
             if (res.IsSuccessStatusCode)
             {
                 var result = res.Content.ReadAsStringAsync().Result;

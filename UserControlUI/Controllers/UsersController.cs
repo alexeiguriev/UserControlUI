@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -23,33 +22,63 @@ namespace UserControlUI.Controllers
 {
     public class UsersController : Controller
     {
-        UserAPI _api = new UserAPI();
         private readonly JWTSettings _jwtsettings;
-        public UsersController(IOptions<JWTSettings> jwtsettings)
+        private readonly HttpClient _client;
+        public UsersController(IOptions<JWTSettings> jwtsettings, HttpClient client)
         {
             _jwtsettings = jwtsettings.Value;
+            _client = client;
         }
 
 
         public async Task<IActionResult> Index()
         {
-            List<UserDTO> users = new List<UserDTO>();
-            HttpClient client = _api.Initial();
-
-            string accessCokie = HttpContext.Session.GetString("JWToken");
-            client.DefaultRequestHeaders.Add("Cookie", accessCokie);
-
-            HttpResponseMessage res = await client.GetAsync("api/User");
-            if (res.StatusCode == HttpStatusCode.Unauthorized)
+            List<UserDTO> users = null;
+            try
             {
-                return RedirectToAction("Login", "Authentication");
+                users = await GetUsers();
             }
-            if (res.IsSuccessStatusCode)
+            catch
             {
-                var result = res.Content.ReadAsStringAsync().Result;
-                users = JsonConvert.DeserializeObject<List<UserDTO>>(result);
+
             }
             return View(users);
         }
+        [HttpGet]
+        public async Task<IActionResult> Users()
+        {
+            List<UserDTO> users = null;
+            try
+            {
+                users = await GetUsers();
+            }
+            catch
+            {
+                BadRequest(null);
+            }
+            return Ok(users);
+
+        }
+        public async Task<List<UserDTO>> GetUsers()
+        {
+            List<UserDTO> users = null;
+            try
+            {
+                string accessCokie = ViewData["JWToken"] as string;
+                _client.DefaultRequestHeaders.Add("Cookie", accessCokie);
+
+                HttpResponseMessage res = await _client.GetAsync("api/User");
+                if (res.IsSuccessStatusCode)
+                {
+                    var result = res.Content.ReadAsStringAsync().Result;
+                    users = JsonConvert.DeserializeObject<List<UserDTO>>(result);
+                }
+            }
+            catch
+            {
+            }
+            return users;
+        }
+
     }
 }
