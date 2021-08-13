@@ -45,15 +45,6 @@ namespace UserControlUI
                     {
                         OnSignedIn = async context =>
                         {
-                            //    var principal = context.Principal;
-                            //    if(principal.HasClaim(c=>c.Type == ClaimTypes.NameIdentifier))
-                            //    {
-                            //        if (principal.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value == "alexei")
-                            //        {
-                            //            var claimsIdentity = principal.Identity as ClaimsIdentity;
-                            //            claimsIdentity.AddClaim(new Claim(ClaimTypes.Role, "Admin"));
-                            //        }
-                            //    }
                             await Task.CompletedTask;
                         },
                         OnSigningOut = async context =>

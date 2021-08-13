@@ -142,14 +142,13 @@ namespace Auth.Controllers
             };
             return View(document);
         }
-        public async Task<IActionResult> Dwonload(int docId)
+        public async Task<IActionResult> Dwonload(int id)
         {
 
-            DocumentDTO doc = await GetFileFromDbByIdAsync(docId);
+            DocumentDTO doc = await GetFileFromDbByIdAsync(id);
 
-            FormFile formFile = DownloadFile(doc);
-
-            return RedirectToAction("Index");
+            IActionResult file = File(doc.Content, doc.Type, doc.Name);
+            return file;
 
         }
         private async Task<DocumentDTO> GetFileFromDbByIdAsync(int id)
@@ -222,24 +221,6 @@ namespace Auth.Controllers
             }
             return document;
         }
-        public FormFile DownloadFile(DocumentDTO document)
-        {
-            using (var stream = new MemoryStream(document.Content))
-            {
-                var file = new FormFile(stream, 0, document.Content.Length, "file", document.Name)
-                {
-                    Headers = new HeaderDictionary(),
-                    ContentType = document.Type,
-                };
 
-                System.Net.Mime.ContentDisposition cd = new System.Net.Mime.ContentDisposition
-                {
-                    FileName = file.FileName
-                };
-                file.ContentDisposition = cd.ToString();
-            }
-            throw new NotImplementedException();
-
-        }
     }
     }
