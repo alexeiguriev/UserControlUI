@@ -30,7 +30,7 @@ namespace Auth.Controllers
             List<UserDTO> users = null;
             try
             {
-                users = await GetUsers();
+                users = await GetUsersAsync();
             }
             catch
             {
@@ -44,7 +44,7 @@ namespace Auth.Controllers
             List<UserDTO> users = null;
             try
             {
-                users = await GetUsers();
+                users = await GetUsersAsync();
             }
             catch
             {
@@ -53,7 +53,7 @@ namespace Auth.Controllers
             return Ok(users);
 
         }
-        public async Task<List<UserDTO>> GetUsers()
+        public async Task<List<UserDTO>> GetUsersAsync()
         {
             List<UserDTO> users = null;
             try

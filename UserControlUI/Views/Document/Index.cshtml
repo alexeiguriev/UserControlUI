@@ -67,6 +67,9 @@
                         { <text>|</text>}
                 }
 
+                    @Html.ActionLink("Dwonload", "Dwonload", new { Id = doc.Id, Name = doc.Name, Type = doc.Type, Status = doc.Status, UploadedDate = doc.UploadedDate, UpdatedByUserId = doc.UpdatedByUserId, Content = doc.Content })
+                    
+
                 </td>
 
             </tr>

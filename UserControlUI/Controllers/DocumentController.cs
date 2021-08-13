@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
@@ -26,10 +27,6 @@ namespace Auth.Controllers
         [Authorize]
         public async Task<IActionResult> Index()
         {
-            var rolescp = HttpContext.User
-                .FindAll(ClaimTypes.Role)
-                .Select(x => x.Value)
-                .ToArray();
             List<DocumentDTO> documents = new List<DocumentDTO>();
 
             // Set token
@@ -145,6 +142,47 @@ namespace Auth.Controllers
             };
             return View(document);
         }
+        public async Task<IActionResult> Dwonload(int docId)
+        {
+
+            DocumentDTO doc = await GetFileFromDbByIdAsync(docId);
+
+            FormFile formFile = DownloadFile(doc);
+
+            return RedirectToAction("Index");
+
+        }
+        private async Task<DocumentDTO> GetFileFromDbByIdAsync(int id)
+        {
+            DocumentDTO doc;
+            try
+            {
+                // Set token
+                string accessCokie = HttpContext.Session.GetString("JWToken");
+                //string accessCokie = ViewData["JWToken"] as string;
+
+                _client.DefaultRequestHeaders.Add("Cookie", accessCokie);
+
+                // HTTP POST
+                var res = await _client.GetAsync("api/Document/" + id);
+
+                // Check if success
+                if (res.IsSuccessStatusCode)
+                {
+                    var result = res.Content.ReadAsStringAsync().Result;
+                    doc = JsonConvert.DeserializeObject<DocumentDTO>(result);
+                }
+                else
+                {
+                    doc = null;
+                }
+            }
+            catch
+            {
+                doc = null;
+            }
+            return doc;
+        }
         public InputDocument UploadFile(IFormFile file)
         {
             InputDocument document;
@@ -184,5 +222,24 @@ namespace Auth.Controllers
             }
             return document;
         }
+        public FormFile DownloadFile(DocumentDTO document)
+        {
+            using (var stream = new MemoryStream(document.Content))
+            {
+                var file = new FormFile(stream, 0, document.Content.Length, "file", document.Name)
+                {
+                    Headers = new HeaderDictionary(),
+                    ContentType = document.Type,
+                };
+
+                System.Net.Mime.ContentDisposition cd = new System.Net.Mime.ContentDisposition
+                {
+                    FileName = file.FileName
+                };
+                file.ContentDisposition = cd.ToString();
+            }
+            throw new NotImplementedException();
+
+        }
     }
-}
+    }
