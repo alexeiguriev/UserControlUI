@@ -1,16 +1,16 @@
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
+using System.Security.Claims;
 using System.Threading.Tasks;
-using UserControlUI.Handlers;
-using UserControlUI.Models;
 
 namespace UserControlUI
 {
@@ -28,9 +28,6 @@ namespace UserControlUI
         {
             services.AddControllersWithViews();
 
-            var jwtSection = Configuration.GetSection("JWTSettings");
-            services.Configure<JWTSettings>(jwtSection);
-
             services.AddDistributedMemoryCache();
 
             services.AddSession(options =>
@@ -39,7 +36,39 @@ namespace UserControlUI
                 options.Cookie.HttpOnly = true;
                 options.Cookie.IsEssential = true;
             });
-            //services.AddScoped<Auth>();
+
+            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                .AddCookie(options =>{
+                    options.LoginPath = "/login";
+                    options.AccessDeniedPath = "/denied";
+                    options.Events = new CookieAuthenticationEvents()
+                    {
+                        OnSignedIn = async context =>
+                        {
+                            //    var principal = context.Principal;
+                            //    if(principal.HasClaim(c=>c.Type == ClaimTypes.NameIdentifier))
+                            //    {
+                            //        if (principal.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value == "alexei")
+                            //        {
+                            //            var claimsIdentity = principal.Identity as ClaimsIdentity;
+                            //            claimsIdentity.AddClaim(new Claim(ClaimTypes.Role, "Admin"));
+                            //        }
+                            //    }
+                            await Task.CompletedTask;
+                        },
+                        OnSigningIn = async context =>
+                        {
+                            await Task.CompletedTask;
+                        },
+                        OnValidatePrincipal = async context =>
+                        {
+                            await Task.CompletedTask;
+                        }
+
+                    };
+                });
+            services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://localhost:3160") });
+            services.AddAutoMapper(typeof(Startup));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -52,15 +81,18 @@ namespace UserControlUI
             else
             {
                 app.UseExceptionHandler("/Home/Error");
+                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+                app.UseHsts();
             }
+            app.UseHttpsRedirection();
             app.UseStaticFiles();
 
             app.UseRouting();
-
             app.UseAuthentication();
-            app.UseAuthorization();
 
             app.UseSession();
+
+            app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {

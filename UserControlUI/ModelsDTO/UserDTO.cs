@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using UserControlUI.Models;
 
 namespace UserControlUI.ModelsDTO
 {
@@ -11,6 +10,6 @@ namespace UserControlUI.ModelsDTO
         public int Id { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
-        public int[] RoleIds { get; set; }
+        public string[] Roles { get; set; }
     }
 }

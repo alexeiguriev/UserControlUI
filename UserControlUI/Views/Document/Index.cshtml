@@ -6,15 +6,16 @@
 
 <h1>List of documents</h1>
 
-<p>
-    <a asp-controller="Document" asp-action="Create">Create New</a>
-</p>
+@*Project Admin or PM*@
+@if (User.IsInRole("Admin") || User.IsInRole("PM") || User.IsInRole("Developer"))
+{
+    <p>
+        <a asp-controller="Document" asp-action="Create">Create New</a>
+    </p>
+}
 <table class="table">
     <thead>
         <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Id)
-            </th>
             <th>
                 @Html.DisplayNameFor(model => model.Name)
             </th>
@@ -34,32 +35,45 @@
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Id)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Name)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Type)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Status)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.UploadedDate)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.UpdatedByUserId)
-            </td>
-            <td>
-                @Html.ActionLink("Edit", "Edit", new { /* id=item.PrimaryKey */ }) |
-                @Html.ActionLink("Details", "Details", new { /* id=item.PrimaryKey */ }) |
-                @Html.ActionLink("Delete", "Delete", new { /* id=item.PrimaryKey */ })
-            </td>
-        </tr>
-}
+        @foreach (var doc in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => doc.Name)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => doc.Type)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => doc.Status)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => doc.UploadedDate)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => doc.UpdatedByUserId)
+                </td>
+                <td>
+                    @*Project Admin or PM*@
+                    @if (User.IsInRole("Admin") || User.IsInRole("PM"))
+                    {
+                        @Html.ActionLink("Edit", "Edit", new { /* id=item.PrimaryKey */ })
+                        { <text>|</text> }
+                }
+                @*Developer*@
+                    @if (User.IsInRole("Admin"))
+                    {
+                        @Html.ActionLink("Delete", "Delete", new { /* id=item.PrimaryKey */ })
+                        { <text>|</text>}
+                }
+
+                </td>
+
+            </tr>
+        }
     </tbody>
 </table>
+
+<div>
+    <a asp-controller="Home" asp-action="Index">Back Home</a>
+</div>
