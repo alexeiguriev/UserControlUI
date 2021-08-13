@@ -56,7 +56,7 @@ namespace UserControlUI
                             //    }
                             await Task.CompletedTask;
                         },
-                        OnSigningIn = async context =>
+                        OnSigningOut = async context =>
                         {
                             await Task.CompletedTask;
                         },

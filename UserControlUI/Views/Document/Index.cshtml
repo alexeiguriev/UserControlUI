@@ -57,13 +57,13 @@
                     @*Project Admin or PM*@
                     @if (User.IsInRole("Admin") || User.IsInRole("PM"))
                     {
-                        @Html.ActionLink("Edit", "Edit", new { /* id=item.PrimaryKey */ })
+                        @Html.ActionLink("Edit", "Edit", new { id = doc.Id, name = doc.Name, type = doc.Type })
                         { <text>|</text> }
                 }
                 @*Developer*@
                     @if (User.IsInRole("Admin"))
                     {
-                        @Html.ActionLink("Delete", "Delete", new { /* id=item.PrimaryKey */ })
+                        @Html.ActionLink("Delete", "Delete", new { id = doc.Id, name = doc.Name, type = doc.Type })
                         { <text>|</text>}
                 }
 

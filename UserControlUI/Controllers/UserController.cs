@@ -1,4 +1,6 @@
 ﻿using HelperCSharp;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.Collections.Generic;
@@ -13,6 +15,8 @@ using UserControlUI.ModelsDTO;
 
 namespace Auth.Controllers
 {
+
+    [Authorize(Roles = "Admin")]
     public class UserController : Controller
     {
         private readonly HttpClient _client;
@@ -20,7 +24,6 @@ namespace Auth.Controllers
         {
             _client = client;
         }
-
 
         public async Task<IActionResult> Index()
         {
@@ -55,7 +58,8 @@ namespace Auth.Controllers
             List<UserDTO> users = null;
             try
             {
-                string accessCokie = ViewData["JWToken"] as string;
+                //string accessCokie = ViewData["JWToken"] as string;
+                string accessCokie = HttpContext.Session.GetString("JWToken");
                 _client.DefaultRequestHeaders.Add("Cookie", accessCokie);
 
                 HttpResponseMessage res = await _client.GetAsync("api/User");

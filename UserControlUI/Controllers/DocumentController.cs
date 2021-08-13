@@ -104,9 +104,46 @@ namespace Auth.Controllers
             return RedirectToAction("Login", "Authentication");
         }
         [Authorize(Roles = "Admin")]
-        public IActionResult Delete()
+        public async Task<IActionResult> DeleteDoc()
         {
-            return View();
+            try
+            {
+                int id = (int)HttpContext.Session.GetInt32("DocToDeleteId");
+
+                // Set token
+                string accessCokie = HttpContext.Session.GetString("JWToken");
+                //string accessCokie = ViewData["JWToken"] as string;
+
+                _client.DefaultRequestHeaders.Add("Cookie", accessCokie);
+
+                // HTTP POST
+                var response = await _client.DeleteAsync("api/Document/" + id);
+
+                // Check if success
+                if (response.IsSuccessStatusCode)
+                {
+
+                }
+            }
+            catch
+            {
+
+            }
+            return RedirectToAction("Index");
+        }
+        [Authorize(Roles = "Admin")]
+        public IActionResult Delete(int id, string name, string type)
+        {
+            // Store Doc Id
+            HttpContext.Session.SetInt32("DocToDeleteId", id);
+
+            DocumentDTO document = new DocumentDTO()
+            {
+                Id = id,
+                Name = name,
+                Type = type
+            };
+            return View(document);
         }
         public InputDocument UploadFile(IFormFile file)
         {
