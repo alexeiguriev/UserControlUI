@@ -1,5 +1,6 @@
 ﻿using Auth.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
@@ -22,6 +23,10 @@ namespace Auth.Controllers
 
         public IActionResult Index()
         {
+            if ((string.IsNullOrEmpty(HttpContext.Session.GetString("JWToken")) ) && (User.Identity.IsAuthenticated))
+            {
+                return RedirectToAction("Logout", "Authentication");
+            }                
             return View();
         }
         [Authorize(Roles = "Admin")]

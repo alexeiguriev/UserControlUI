@@ -1,4 +1,5 @@
-﻿using HelperCSharp;
+﻿using AutoMapper;
+using HelperCSharp;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -19,10 +20,12 @@ namespace Auth.Controllers
     [Authorize(Roles = "Admin")]
     public class UserController : Controller
     {
+        private readonly IMapper _mapper;
         private readonly HttpClient _client;
-        public UserController( HttpClient client)
+        public UserController( HttpClient client, IMapper mapper)
         {
             _client = client;
+            _mapper = mapper;
         }
 
         public async Task<IActionResult> Index()
@@ -52,6 +55,80 @@ namespace Auth.Controllers
             }
             return Ok(users);
 
+        }
+        public async Task<IActionResult> Edit(UserDTO user)
+        {
+            // Get all role names
+            string[] roleNames = await GetRolesNamesListAsync();
+
+            // Store in view data user roles
+            ViewData["UserRoles"] = roleNames;
+
+            return View(user);
+        }
+        public async Task<IActionResult> Save(UserDTO user)
+        {
+            // Convert userDto to user Input
+            UserInput newUser = _mapper.Map<UserInput>(user);
+
+            List<RoleDTO> allRoles = await GetRolesAsync();
+            List<int> roleIds = new List<int>();
+
+            // Confert roles names to user IDs
+            foreach(string roleName in user.Roles)
+            {
+                roleIds.Add(allRoles.Find(ur => ur.Name == roleName).Id);
+            }
+
+            // Put role IDs in user roleIDs
+            newUser.UserRolesId = roleIds.ToArray();
+
+            try
+            {
+                //string accessCokie = ViewData["JWToken"] as string;
+                string accessCokie = HttpContext.Session.GetString("JWToken");
+                _client.DefaultRequestHeaders.Add("Cookie", accessCokie);
+
+                // HTTP POST
+                HttpResponseMessage res = await _client.PutAsJsonAsync("api/User/" + user.Id, user).ConfigureAwait(false);
+            }
+            catch
+            {
+            }
+
+            return RedirectToAction("Index");
+        }
+        public async Task<string[]> GetRolesNamesListAsync()
+        {
+            List<RoleDTO> roles = await GetRolesAsync();
+            List<string> roleNames = new List<string>();
+            
+            foreach(RoleDTO role in roles)
+            {
+                roleNames.Add(role.Name);
+            }
+            return roleNames.ToArray();
+        }
+        public async Task<List<RoleDTO>> GetRolesAsync()
+        {
+            List<RoleDTO> roles = null;
+            try
+            {
+                //string accessCokie = ViewData["JWToken"] as string;
+                string accessCokie = HttpContext.Session.GetString("JWToken");
+                _client.DefaultRequestHeaders.Add("Cookie", accessCokie);
+
+                HttpResponseMessage res = await _client.GetAsync("api/Role");
+                if (res.IsSuccessStatusCode)
+                {
+                    var result = res.Content.ReadAsStringAsync().Result;
+                    roles = JsonConvert.DeserializeObject<List<RoleDTO>>(result);
+                }
+            }
+            catch
+            {
+            }
+            return roles;
         }
         public async Task<List<UserDTO>> GetUsersAsync()
         {

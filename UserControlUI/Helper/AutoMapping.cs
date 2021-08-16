@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using UserControlUI.Models;
 
 namespace UserControlUI.Helper
 {
@@ -13,7 +14,9 @@ namespace UserControlUI.Helper
     {
         public AutoMapping()
         {
-            CreateMap <IFormFile, InputDocument>()
+            CreateMap<UserDTO, UserInput>();
+
+            CreateMap<IFormFile, InputDocument>()
                 .ForMember(d => d.Name, opt => opt.MapFrom(s => s.FileName))
                 .ForMember(d => d.Type, opt => opt.MapFrom(s => s.ContentType))
                 .ForMember(d => d.Content, opt => opt.MapFrom(s => Converter.PdfToByteBuffConverter(s)));
