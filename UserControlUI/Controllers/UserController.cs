@@ -58,21 +58,61 @@ namespace Auth.Controllers
         }
         public async Task<IActionResult> Edit(UserDTO user)
         {
-            // Get all role names
-            string[] roleNames = await GetRolesNamesListAsync();
+            // Create a value for delete role
+            string[] roleNames = { "Delete Role" };
+
+            // Get all user roles
+            string[] allUserRoles = await GetRolesNamesListAsync();
+
+            // Combine roles
+            roleNames = roleNames.Concat(allUserRoles).ToArray();
 
             // Store in view data user roles
             ViewData["UserRoles"] = roleNames;
 
+            // Store in view data user roles
+            HttpContext.Session.SetInt32("UserToEditId", user.Id);
+
             return View(user);
+        }
+        public IActionResult Details(UserDTO user)
+        {
+            return View(user);
+        }
+        public async Task<IActionResult> AddRole(UserDTO user)
+        {
+            user.Id = (int)HttpContext.Session.GetInt32("UserToEditId");
+
+            // Get all role names
+            List<RoleDTO> roles = await GetRolesAsync();
+
+            List<string> newRoleNamesList = new List<string>(user.Roles);// { aString, bString }
+            newRoleNamesList.Add(roles[0].Name);
+
+            user.Roles = newRoleNamesList.ToArray();
+
+            return RedirectToAction("Edit", user);
         }
         public async Task<IActionResult> Save(UserDTO user)
         {
+            user.Id = (int)HttpContext.Session.GetInt32("UserToEditId");
             // Convert userDto to user Input
             UserInput newUser = _mapper.Map<UserInput>(user);
 
             List<RoleDTO> allRoles = await GetRolesAsync();
             List<int> roleIds = new List<int>();
+
+            // Remove "DeleteRole" from array
+            string numToRemove = "Delete Role";
+            user.Roles = user.Roles.Where(val => val != numToRemove).ToArray();
+
+            // Check for role dublicaties
+            if (UserValudation(user))
+            {
+                // Store error message
+                TempData["UserEditError"] = "Error Input";
+                return RedirectToAction("Edit", user);
+            }
 
             // Confert roles names to user IDs
             foreach(string roleName in user.Roles)
@@ -90,10 +130,19 @@ namespace Auth.Controllers
                 _client.DefaultRequestHeaders.Add("Cookie", accessCokie);
 
                 // HTTP POST
-                HttpResponseMessage res = await _client.PutAsJsonAsync("api/User/" + user.Id, user).ConfigureAwait(false);
+                HttpResponseMessage res = await _client.PutAsJsonAsync("api/User/" + user.Id, newUser).ConfigureAwait(false);
+                if (!res.IsSuccessStatusCode)
+                {
+                    // Store error message
+                    TempData["UserEditError"] = "Error Input";
+                    return RedirectToAction("Edit", user);
+                }
             }
             catch
             {
+                // Store error message
+                TempData["UserEditError"] = "Error Input";
+                return RedirectToAction("Edit", user);
             }
 
             return RedirectToAction("Index");
@@ -129,6 +178,27 @@ namespace Auth.Controllers
             {
             }
             return roles;
+        }
+        public async Task<RoleDTO> GetRolesByIdAsync(int id)
+        {
+            RoleDTO role = null;
+            try
+            {
+                //string accessCokie = ViewData["JWToken"] as string;
+                string accessCokie = HttpContext.Session.GetString("JWToken");
+                _client.DefaultRequestHeaders.Add("Cookie", accessCokie);
+
+                HttpResponseMessage res = await _client.GetAsync("api/Role/" + id);
+                if (res.IsSuccessStatusCode)
+                {
+                    var result = res.Content.ReadAsStringAsync().Result;
+                    role = JsonConvert.DeserializeObject<RoleDTO>(result);
+                }
+            }
+            catch
+            {
+            }
+            return role;
         }
         public async Task<List<UserDTO>> GetUsersAsync()
         {
@@ -193,6 +263,27 @@ namespace Auth.Controllers
                 throw new AuthenticationException("Authentication failed");
             }
             return Ok(user);
+        }
+        private bool UserValudation(UserDTO user)
+        {
+            bool retValue = true;
+            if (user.Roles.Count() != user.Roles.Distinct().Count())
+            {
+                retValue &= false;
+            }
+            if (string.IsNullOrEmpty(user.FirstName))
+            {
+                retValue &= false;
+            }
+            if (string.IsNullOrEmpty(user.LastName))
+            {
+                retValue &= false;
+            }
+            if (string.IsNullOrEmpty(user.EmailAddress))
+            {
+                retValue &= false;
+            }
+            return retValue;
         }
     }
 }
