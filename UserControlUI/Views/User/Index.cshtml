@@ -2,19 +2,19 @@
 
 @{
     ViewData["Title"] = "Index";
+    var error = TempData["UserIndexError"] as string;
 }
 
 <h1>Index</h1>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
+@if (!string.IsNullOrEmpty(error))
+{
+    <h2 class="alert-danger" style="padding:20px">@error</h2>
+}
+
 <table class="table">
     <thead>
         <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Id)
-            </th>
             <th>
                 @Html.DisplayNameFor(model => model.FirstName)
             </th>
@@ -28,26 +28,24 @@
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Id)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.FirstName)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.LastName)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.EmailAddress)
-            </td>
-            <td>
-                @Html.ActionLink("Edit", "Edit", new { Id = item.Id, FirstName = item.FirstName, LastName = item.LastName, EmailAddress = item.EmailAddress, Roles = item.Roles }) |
-                @Html.ActionLink("Details", "Details", new { Id = item.Id, FirstName = item.FirstName, LastName = item.LastName, EmailAddress = item.EmailAddress, Roles = item.Roles }) |
-                @Html.ActionLink("Delete", "Delete", new { Id = item.Id, FirstName = item.FirstName, LastName = item.LastName, EmailAddress = item.EmailAddress, Roles = item.Roles })
-            </td>
-        </tr>
-}
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.FirstName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.LastName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.EmailAddress)
+                </td>
+                <td>
+                    @Html.ActionLink("Edit", "Edit", new { Id = item.Id, FirstName = item.FirstName, LastName = item.LastName, EmailAddress = item.EmailAddress, Roles = item.Roles }) |
+                    @Html.ActionLink("Details", "Details", new { Id = item.Id, FirstName = item.FirstName, LastName = item.LastName, EmailAddress = item.EmailAddress, Roles = item.Roles }) |
+                    @Html.ActionLink("Delete", "Delete", new { Id = item.Id, FirstName = item.FirstName, LastName = item.LastName, EmailAddress = item.EmailAddress, Roles = item.Roles })
+                </td>
+            </tr>
+        }
     </tbody>
 </table>

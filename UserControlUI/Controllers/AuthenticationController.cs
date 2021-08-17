@@ -26,9 +26,10 @@ namespace Auth.Controllers
             _client = client;
         }
         [HttpGet("login")]
-        public IActionResult Login(string returnUrl)
+        public async Task<IActionResult> Login(string returnUrl)
         {
             ViewData["ReturnUrl"] = returnUrl;
+            
             return View();
         }
         [HttpGet("denied")]
@@ -141,6 +142,12 @@ namespace Auth.Controllers
         [HttpPost]
         public async Task<ActionResult> Register(UserInput user)
         {
+            // Get all user roles
+            List<RoleDTO> allUserRoles = await GetRolesAsync();
+
+            // Set first in list user role for this new user
+            user.UserRolesId = new int[] { allUserRoles[0].Id };
+
             user.Password = Crypt.EncodePasswordToBase64(user.Password);
 
             // Setting content type.                   
@@ -166,6 +173,27 @@ namespace Auth.Controllers
                 string result = response.Content.ReadAsStringAsync().Result;
             }
             return RedirectToAction("Login", "Authentication");
+        }
+        public async Task<List<RoleDTO>> GetRolesAsync()
+        {
+            List<RoleDTO> roles = null;
+            try
+            {
+                //string accessCokie = ViewData["JWToken"] as string;
+                string accessCokie = HttpContext.Session.GetString("JWToken");
+                _client.DefaultRequestHeaders.Add("Cookie", accessCokie);
+
+                HttpResponseMessage res = await _client.GetAsync("api/Role");
+                if (res.IsSuccessStatusCode)
+                {
+                    var result = res.Content.ReadAsStringAsync().Result;
+                    roles = JsonConvert.DeserializeObject<List<RoleDTO>>(result);
+                }
+            }
+            catch
+            {
+            }
+            return roles;
         }
     }
 }

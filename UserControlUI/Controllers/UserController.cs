@@ -79,6 +79,40 @@ namespace Auth.Controllers
         {
             return View(user);
         }
+        public IActionResult Delete(UserDTO user)
+        {
+            // Store Doc Id
+            HttpContext.Session.SetInt32("UserToDeleteId", user.Id);
+
+            // Run view
+            return View(user);
+        }
+        public async Task<IActionResult> DeleteUser(UserDTO user)
+        {
+            try
+            {
+                //string accessCokie = ViewData["JWToken"] as string;
+                string accessCokie = HttpContext.Session.GetString("JWToken");
+                _client.DefaultRequestHeaders.Add("Cookie", accessCokie);
+
+                int id = (int)HttpContext.Session.GetInt32("UserToDeleteId");
+                // HTTP POST
+                HttpResponseMessage res = await _client.DeleteAsync("api/User/" + id);
+                if (!res.IsSuccessStatusCode)
+                {
+                    // Store error message
+                    TempData["UserIndexError"] = "Delete Error";
+                    return RedirectToAction("Index", user);
+                }
+            }
+            catch
+            {
+                // Store error message
+                TempData["UserIndexError"] = "Delete Error";
+                return RedirectToAction("Index", user);
+            }
+            return RedirectToAction("Index");
+        }
         public async Task<IActionResult> AddRole(UserDTO user)
         {
             user.Id = (int)HttpContext.Session.GetInt32("UserToEditId");
@@ -106,8 +140,8 @@ namespace Auth.Controllers
             string numToRemove = "Delete Role";
             user.Roles = user.Roles.Where(val => val != numToRemove).ToArray();
 
-            // Check for role dublicaties
-            if (UserValudation(user))
+            // User input data validation
+            if (!UserValudated(user))
             {
                 // Store error message
                 TempData["UserEditError"] = "Error Input";
@@ -264,7 +298,7 @@ namespace Auth.Controllers
             }
             return Ok(user);
         }
-        private bool UserValudation(UserDTO user)
+        private bool UserValudated(UserDTO user)
         {
             bool retValue = true;
             if (user.Roles.Count() != user.Roles.Distinct().Count())
