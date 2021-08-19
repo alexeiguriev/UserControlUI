@@ -12,7 +12,7 @@ namespace UserControlUI.Controllers
     {
         Noti _noty = new Noti()
         {
-            NotiId = 1,
+            Id = 1,
             FromUserId = 1,
             ToUserId = 2,
             NotiHeader = "this is notyfication header",
@@ -27,7 +27,7 @@ namespace UserControlUI.Controllers
         };
         Noti _noty1 = new Noti()
         {
-            NotiId = 1,
+            Id = 1,
             FromUserId = 1,
             ToUserId = 2,
             NotiHeader = "this is notyfication header",

@@ -56,7 +56,7 @@
         }
     };
     $.fn.ikrNotificationCount = function (options) {
-        
+        /*
           Declaration : $("#myComboId").ikrNotificationCount({
                     NotificationList: [],
                     NotiFromPropName: "",
@@ -65,7 +65,7 @@
                     ControllerName: "Notifications",
                     ActionName: "AllNotifications"
           });
-       
+       */
         var defaultSettings = $.extend({
             NotificationList: [],
             NotiFromPropName: "",

@@ -7,7 +7,7 @@ namespace UserControlUI.ModelsDTO
 {
     public class Noti
     {
-        public int NotiId { get; set; } = 0;
+        public int Id { get; set; } = 0;
         public int FromUserId { get; set; } = 0;
         public int ToUserId { get; set; } = 0;
         public string NotiHeader { get; set; } = "";

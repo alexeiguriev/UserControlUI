@@ -41,8 +41,23 @@ namespace Auth.Controllers
                 var result = res.Content.ReadAsStringAsync().Result;
                 documents = JsonConvert.DeserializeObject<List<DocumentDTO>>(result);
 
+                foreach(DocumentDTO document in documents)
+                {
+                    // Get user who updated this document
+                    UserDTO user = await GetUserByIdAsync(document.UpdatedByUserId);
+
+                    // Ser user name who updated in document structure.
+                    document.UpdatedByUserName = $"{user.FirstName} {user.LastName}";
+                }
+
             }
             return View(documents);
+        }
+        [Authorize]
+        public async Task<IActionResult> Details(int id)
+        {
+            DocumentDTO document = await GetDocumentByIdAsync(id);
+            return View(document);
         }
         [Authorize(Roles = "Admin,PM,Developer")]
         public IActionResult Create()
@@ -129,17 +144,14 @@ namespace Auth.Controllers
             return RedirectToAction("Index");
         }
         [Authorize(Roles = "Admin")]
-        public IActionResult Delete(int id, string name, string type)
+        public async Task<IActionResult> Delete(int id)
         {
             // Store Doc Id
             HttpContext.Session.SetInt32("DocToDeleteId", id);
 
-            DocumentDTO document = new DocumentDTO()
-            {
-                Id = id,
-                Name = name,
-                Type = type
-            };
+            // Get document by Id
+            DocumentDTO document = await GetDocumentByIdAsync(id);
+
             return View(document);
         }
         public async Task<IActionResult> Dwonload(int id)
@@ -221,6 +233,54 @@ namespace Auth.Controllers
             }
             return document;
         }
+        public async Task<UserDTO> GetUserByIdAsync(int id)
+        {
+            UserDTO user = null;
+            try
+            {
+                //string accessCokie = ViewData["JWToken"] as string;
+                string accessCokie = HttpContext.Session.GetString("JWToken");
+                _client.DefaultRequestHeaders.Add("Cookie", accessCokie);
+
+                HttpResponseMessage res = await _client.GetAsync("api/User/" + id);
+                if (res.IsSuccessStatusCode)
+                {
+                    var result = res.Content.ReadAsStringAsync().Result;
+                    user = JsonConvert.DeserializeObject<UserDTO>(result);
+                }
+            }
+            catch
+            {
+            }
+            return user;
+        }
+        public async Task<DocumentDTO> GetDocumentByIdAsync(int id)
+        {
+            DocumentDTO document = null;
+            try
+            {
+                //string accessCokie = ViewData["JWToken"] as string;
+                string accessCokie = HttpContext.Session.GetString("JWToken");
+                _client.DefaultRequestHeaders.Add("Cookie", accessCokie);
+
+                HttpResponseMessage res = await _client.GetAsync("api/Document/" + id);
+                if (res.IsSuccessStatusCode)
+                {
+                    var result = res.Content.ReadAsStringAsync().Result;
+                    document = JsonConvert.DeserializeObject<DocumentDTO>(result);
+
+                    // Get user who updated this document
+                    UserDTO user = await GetUserByIdAsync(document.UpdatedByUserId);
+
+                    // Ser user name who updated in document structure.
+                    document.UpdatedByUserName = $"{user.FirstName} {user.LastName}";
+                }
+            }
+            catch
+            {
+            }
+            return document;
+        }
 
     }
-    }
+}

@@ -13,6 +13,7 @@ namespace UserControlUI.ModelsDTO
         public int Status { get; set; }
         public DateTime UploadedDate { get; set; }
         public int UpdatedByUserId { get; set; }
+        public string UpdatedByUserName { get; set; }
         public byte[] Content { get; set; }
     }
 }

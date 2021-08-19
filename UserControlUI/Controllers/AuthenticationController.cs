@@ -26,7 +26,7 @@ namespace Auth.Controllers
             _client = client;
         }
         [HttpGet("login")]
-        public async Task<IActionResult> Login(string returnUrl)
+        public IActionResult Login(string returnUrl)
         {
             ViewData["ReturnUrl"] = returnUrl;
             

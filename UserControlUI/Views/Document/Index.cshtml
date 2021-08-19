@@ -29,7 +29,7 @@
                 @Html.DisplayNameFor(model => model.UploadedDate)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.UpdatedByUserId)
+                @Html.DisplayNameFor(model => model.UpdatedByUserName)
             </th>
             <th></th>
         </tr>
@@ -51,24 +51,27 @@
                     @Html.DisplayFor(modelItem => doc.UploadedDate)
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => doc.UpdatedByUserId)
+                    @Html.DisplayFor(modelItem => doc.UpdatedByUserName)
                 </td>
                 <td>
+                    @Html.ActionLink("Details", "Details", new { id = doc.Id })
+                     | 
+
                     @*Project Admin or PM*@
                     @if (User.IsInRole("Admin") || User.IsInRole("PM"))
                     {
                         @Html.ActionLink("Edit", "Edit", new { id = doc.Id, name = doc.Name, type = doc.Type })
-                        { <text>|</text> }
-                }
-                @*Developer*@
-                    @if (User.IsInRole("Admin"))
-                    {
-                        @Html.ActionLink("Delete", "Delete", new { id = doc.Id, name = doc.Name, type = doc.Type })
-                        { <text>|</text>}
-                }
+                        { <text> | </text> }
+                    }
+                    @*Developer*@
+                        @if (User.IsInRole("Admin"))
+                        {
+                            @Html.ActionLink("Delete", "Delete", new { id = doc.Id, name = doc.Name, type = doc.Type })
+                            { <text> | </text>}
+                    }
 
-                    @Html.ActionLink("Dwonload", "Dwonload", new { id = doc.Id})
-                    
+                    @Html.ActionLink("Dwonload", "Dwonload", new { id = doc.Id })
+
 
                 </td>
 
