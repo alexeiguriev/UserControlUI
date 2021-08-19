@@ -63,6 +63,7 @@ namespace Auth.Controllers
                 claims.Add(new Claim("username", loginInput.EmailAddress));
                 claims.Add(new Claim(ClaimTypes.NameIdentifier, loginInput.EmailAddress));
                 claims.Add(new Claim(ClaimTypes.Name, $"{ user.FirstName }  { user.LastName }"));
+                claims.Add(new Claim(ClaimTypes.Sid, user.Id.ToString()));
                 foreach (string role in user.Roles)
                 {
                     claims.Add(new Claim(ClaimTypes.Role, role));

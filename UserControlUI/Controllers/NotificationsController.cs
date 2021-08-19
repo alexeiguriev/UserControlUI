@@ -1,45 +1,29 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
+using System.Security.Claims;
 using System.Text.Json;
 using System.Threading.Tasks;
 using UserControlUI.ModelsDTO;
 
 namespace UserControlUI.Controllers
 {
+    [Authorize]
     public class NotificationsController : Controller
     {
-        Noti _noty = new Noti()
+        private readonly IMapper _mapper;
+        private readonly HttpClient _client;
+        public NotificationsController(IMapper mapper, HttpClient client)
         {
-            Id = 1,
-            FromUserId = 1,
-            ToUserId = 2,
-            NotiHeader = "this is notyfication header",
-            NotiBody = "This is notification body",
-            IsRead = false,
-            Url = "../login",
-            CreatedDate = DateTime.Now,
-            Message = "This is notification message",
-            FromUserName = "AlexeiFrom",
-            ToUserName = "AlexeiTo"
-
-        };
-        Noti _noty1 = new Noti()
-        {
-            Id = 1,
-            FromUserId = 1,
-            ToUserId = 2,
-            NotiHeader = "this is notyfication header",
-            NotiBody = "This is notification body",
-            IsRead = false,
-            Url = "../Authentication/Register",
-            CreatedDate = DateTime.Now,
-            Message = "This is notification message",
-            FromUserName = "AlexeiFrom",
-            ToUserName = "AlexeiTo"
-
-        };
+            _client = client;
+            _mapper = mapper;
+        }
         public IActionResult Index()
         {
             return View();
@@ -48,15 +32,38 @@ namespace UserControlUI.Controllers
         {
             return View();
         }
-        public JsonResult GetNotifications(bool getOnliUnreaded = false)
+        public async Task<JsonResult> GetNotifications(bool getOnliUnreaded = false)
         {
-            List<Noti> notiList = new List<Noti>();
-            notiList.Add(_noty);
-            notiList.Add(_noty1);
+            int actualUserId = Int32.Parse(((ClaimsIdentity)User.Identity).Claims
+                .Where(c => c.Type == ClaimTypes.Sid)
+                .Select(c => c.Value).ToArray()[0]);
 
+            List<Noti> notiList = await GetNotificationByUserToIdAsync(actualUserId);
+            
             JsonResult result = Json(notiList);
 
             return result;
+        }
+        public async Task<List<Noti>> GetNotificationByUserToIdAsync(int id)
+        {
+            List<Noti> notis = null;
+            try
+            {
+                //string accessCokie = ViewData["JWToken"] as string;
+                string accessCokie = HttpContext.Session.GetString("JWToken");
+                _client.DefaultRequestHeaders.Add("Cookie", accessCokie);
+
+                HttpResponseMessage res = await _client.GetAsync("api/Noti/" + id + "/byuserto");
+                if (res.IsSuccessStatusCode)
+                {
+                    var result = res.Content.ReadAsStringAsync().Result;
+                    notis = JsonConvert.DeserializeObject<List<Noti>>(result);
+                }
+            }
+            catch
+            {
+            }
+            return notis;
         }
     }
 }
