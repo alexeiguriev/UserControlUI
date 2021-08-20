@@ -1,46 +1,59 @@
-﻿<script src="~/lib/jquery/dist/jquery.min.js"></script>
-<table id="tblNotification" class="table table-bordered table-striped">
+﻿@model IEnumerable<UserControlUI.ModelsDTO.Noti>
+
+@{
+    ViewData["Title"] = "AllNotifications";
+}
+
+<h1>AllNotifications</h1>
+
+<table class="table">
     <thead>
         <tr>
-            <th>From</th>
-            <th>Title</th>
-            <th>Detail</th>
-            <th>IsRead</th>
-            <th>Notification DataTime</th>
+            <th>
+                @Html.DisplayNameFor(model => model.FromUserId)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.NotiHeader)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.NotiBody)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.IsRead)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.CreatedDate)
+            </th>
+            <th></th>
         </tr>
     </thead>
     <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.FromUserName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.NotiHeader)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.NotiBody)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.IsReadSt)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.CreatedDateSt)
+            </td>
+            <td>
+                @Html.ActionLink("Details", "Details", new { /* id=item.PrimaryKey */ }) |
+                @Html.ActionLink("Delete", "Delete", new {  id=item.Id  }) |
+                @if (!string.IsNullOrEmpty(item.Url))
+                {
+                    @Html.ActionLink("Goto", "Goto", new { url = item.Url })
+                }
+            </td>
+        </tr>
+}
     </tbody>
 </table>
-
-
-<script type="text/javascript">
-    $(document).ready(function () {
-        $.ajax({
-            type: "GET",
-            dataType: "json",
-            url: "Notifications/GetNotifications",
-            traditional: true,
-            contentType: "application/json;charset=utf-8",
-            success: function (data) {
-                var notifications = data;
-                $.map(notifications, function (notification) {
-                    $("#tblNotification tbody").append("<tr>"
-                        + "<td>" + notification.fromUserName + "</td>"
-                        + "<td>" + notification.notiHeader + "</td>"
-                        + "<td>" + notification.notiBody + "</td>"
-                        + "<td>" + notification.isReadSt + "</td>"
-                        + "<td>" + notification.createdDateSt + "</td>"
-                        + "</tr>");
-                });
-            },
-            error: function (xhr, status, error) {
-
-
-            }
-
-        })
-    })
-</script>
-
-

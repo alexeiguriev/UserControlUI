@@ -11,6 +11,7 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using UserControlUI.Models;
 using UserControlUI.ModelsDTO;
 
 namespace Auth.Controllers
@@ -83,6 +84,9 @@ namespace Auth.Controllers
             // Check if success
             if (response.IsSuccessStatusCode)
             {
+                var result = response.Content.ReadAsStringAsync().Result;
+                DocumentDTO documentDTO = JsonConvert.DeserializeObject<DocumentDTO>(result);
+                await SendNotificationToAdminAndPm(documentDTO);
                 return RedirectToAction("Index");
             }
             return RedirectToAction("Login", "Authentication");
@@ -281,6 +285,102 @@ namespace Auth.Controllers
             }
             return document;
         }
+        public async Task<List<RoleDTO>> GetRolesAsync()
+        {
+            List<RoleDTO> roles = null;
+            try
+            {
+                //string accessCokie = ViewData["JWToken"] as string;
+                string accessCokie = HttpContext.Session.GetString("JWToken");
+                _client.DefaultRequestHeaders.Add("Cookie", accessCokie);
+
+                HttpResponseMessage res = await _client.GetAsync("api/Role");
+                if (res.IsSuccessStatusCode)
+                {
+                    var result = res.Content.ReadAsStringAsync().Result;
+                    roles = JsonConvert.DeserializeObject<List<RoleDTO>>(result);
+                }
+            }
+            catch
+            {
+            }
+            return roles;
+        }
+        private int GetActualUserId()
+        {
+            int actualUserId = Int32.Parse(((ClaimsIdentity)User.Identity).Claims
+                .Where(c => c.Type == ClaimTypes.Sid)
+                .Select(c => c.Value).ToArray()[0]);
+
+            return actualUserId;
+        }
+        private async Task<List<int>> GetAdminandPmUserIds()
+        {
+
+            List<RoleDTO> allRoles = await GetRolesAsync();
+            List<RoleDTO> actualRoles = new List<RoleDTO>();
+
+            actualRoles.Add(allRoles.Find(ur => ur.Name == "Admin"));
+            actualRoles.Add(allRoles.Find(ur => ur.Name == "PM"));
+
+            List<int> userIds = new List<int>();
+            foreach (RoleDTO role in actualRoles)
+            {
+                foreach (int userId in role.ReachedByUserIds)
+                {
+                    userIds.Add(userId);
+                }
+            }
+
+            // Remove dublicates
+            userIds = userIds.Distinct().ToList();
+            return userIds;
+        }
+        public async Task SendNotificationToAdminAndPm(DocumentDTO document)
+        {
+            int actualUserId = GetActualUserId();
+            Noti noti = new Noti()
+            {
+                NotiHeader = "Document added",
+                NotiBody = $"Was Added a new document {document.Name}, by {User.Identity.Name}",
+                FromUserId = actualUserId,
+                IsRead = false,
+                Url = $"../document/details/{document.Id}",
+                Message = $"Was Added new document {document.Name}, by "
+            };
+            try
+            {
+                // Get Admin and PM userIds
+                List<int> userIds = await GetAdminandPmUserIds();
+
+                foreach (int userId in userIds)
+                {
+                    if (userId != actualUserId)
+                    {
+                        //string accessCokie = ViewData["JWToken"] as string;
+                        string accessCokie = HttpContext.Session.GetString("JWToken");
+                        _client.DefaultRequestHeaders.Add("Cookie", accessCokie);
+
+                        // Add to user Id
+                        noti.ToUserId = userId;
+
+                        // HTTP POST
+                        var res = await _client.PostAsJsonAsync("api/Noti", noti).ConfigureAwait(false);
+
+                        // 
+                        if (res.IsSuccessStatusCode)
+                        {
+
+                        }
+                    }
+                }
+            }
+            catch
+            {
+            }
+            return;
+        }
+
 
     }
 }
