@@ -52,7 +52,10 @@ namespace Auth.Controllers
                 }
 
             }
-            return View(documents);
+
+            List<List<DocumentDTO>> documentDTOListOfLists = DocumentListConverter.Convert(documents);
+
+            return View(documentDTOListOfLists);
         }
         [Authorize]
         public async Task<IActionResult> Details(int id)

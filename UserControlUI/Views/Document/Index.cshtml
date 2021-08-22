@@ -1,7 +1,8 @@
-﻿@model IEnumerable<UserControlUI.ModelsDTO.DocumentDTO>
+﻿@model  IEnumerable<IEnumerable<UserControlUI.ModelsDTO.DocumentDTO>>
 
 @{
     ViewData["Title"] = "Index";
+    var docListOfLists = Model.ToList();
 }
 
 <h1>List of documents</h1>
@@ -17,19 +18,22 @@
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.Name)
+                @Html.DisplayNameFor(model => model.First().Name)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Type)
+                @Html.DisplayNameFor(model => model.First().Type)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Status)
+                @Html.DisplayNameFor(model => model.First().Status)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.UploadedDate)
+                @Html.DisplayNameFor(model => model.First().UploadedDate)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.UpdatedByUserName)
+                @Html.DisplayNameFor(model => model.First().UpdatedByUserName)
+            </th>
+            <th>
+                Count
             </th>
             <th></th>
         </tr>
@@ -37,45 +41,48 @@
     <tbody>
         @foreach (var doc in Model)
         {
-            <tr>
-                <td>
-                    @Html.DisplayFor(modelItem => doc.Name)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => doc.Type)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => doc.Status)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => doc.UploadedDate)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => doc.UpdatedByUserName)
-                </td>
-                <td>
-                    @Html.ActionLink("Details", "Details", new { id = doc.Id })
-                     | 
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => doc.First().Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => doc.First().Type)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => doc.First().Status)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => doc.First().UploadedDate)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => doc.First().UpdatedByUserName)
+            </td>
+            <td>
+                V(@doc.Count())
+            </td>
+            <td>
+                @Html.ActionLink("Details", "Details", new { id = doc.First().Id })
+                |
 
-                    @*Project Admin or PM*@
-                    @if (User.IsInRole("Admin") || User.IsInRole("PM"))
-                    {
-                        @Html.ActionLink("Edit", "Edit", new { id = doc.Id, name = doc.Name, type = doc.Type })
-                        { <text> | </text> }
-                    }
-                    @*Developer*@
-                        @if (User.IsInRole("Admin"))
-                        {
-                            @Html.ActionLink("Delete", "Delete", new { id = doc.Id, name = doc.Name, type = doc.Type })
-                            { <text> | </text>}
-                    }
+                @*Project Admin or PM*@
+                @if (User.IsInRole("Admin") || User.IsInRole("PM"))
+                {
+                    @Html.ActionLink("Edit", "Edit", new { id = doc.First().Id, name = doc.First().Name, type = doc.First().Type })
+                    { <text> | </text> }
+            }
+            @*Developer*@
+                @if (User.IsInRole("Admin"))
+                {
+                    @Html.ActionLink("Delete", "Delete", new { id = doc.First().Id, name = doc.First().Name, type = doc.First().Type })
+                    { <text> | </text>}
+            }
 
-                    @Html.ActionLink("Dwonload", "Dwonload", new { id = doc.Id })
+                @Html.ActionLink("Dwonload", "Dwonload", new { id = doc.First().Id })
 
 
-                </td>
+            </td>
 
-            </tr>
+        </tr>
         }
     </tbody>
 </table>
