@@ -11,7 +11,7 @@ namespace UserControlUI.ModelsDTO
         {
             List<DocumentDTO> newList = new List<DocumentDTO>(inputList);
             // Sort list by date
-            newList.Sort((x, y) => x.UploadedDate.CompareTo(y.UploadedDate));
+            newList.Sort((x, y) => y.UploadedDate.CompareTo(x.UploadedDate));
 
             return newList;
 

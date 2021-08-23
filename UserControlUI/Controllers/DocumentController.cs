@@ -28,30 +28,7 @@ namespace Auth.Controllers
         [Authorize]
         public async Task<IActionResult> Index()
         {
-            List<DocumentDTO> documents = new List<DocumentDTO>();
-
-            // Set token
-            string accessCokie = HttpContext.Session.GetString("JWToken");
-            //accessCokie = ViewData["JWToken"] as string;
-            _client.DefaultRequestHeaders.Add("Cookie", accessCokie);
-
-            // Get Documents
-            HttpResponseMessage res = await _client.GetAsync("api/Document");
-            if (res.IsSuccessStatusCode)
-            {
-                var result = res.Content.ReadAsStringAsync().Result;
-                documents = JsonConvert.DeserializeObject<List<DocumentDTO>>(result);
-
-                foreach(DocumentDTO document in documents)
-                {
-                    // Get user who updated this document
-                    UserDTO user = await GetUserByIdAsync(document.UpdatedByUserId);
-
-                    // Ser user name who updated in document structure.
-                    document.UpdatedByUserName = $"{user.FirstName} {user.LastName}";
-                }
-
-            }
+            List<DocumentDTO> documents = await GetAllDocuments();
 
             List<List<DocumentDTO>> documentDTOListOfLists = DocumentListConverter.Convert(documents);
 
@@ -60,8 +37,17 @@ namespace Auth.Controllers
         [Authorize]
         public async Task<IActionResult> Details(int id)
         {
+            // Get document by index
             DocumentDTO document = await GetDocumentByIdAsync(id);
-            return View(document);
+
+            // Get all documents with the same date
+            List<DocumentDTO> documents = await GetDocumentByNameAsync(document.Name);
+
+            // Sort Documents by date
+            documents = DocumentListConverter.SortByDate(documents);
+
+
+            return View(documents);
         }
         [Authorize(Roles = "Admin,PM,Developer")]
         public IActionResult Create()
@@ -288,6 +274,36 @@ namespace Auth.Controllers
             }
             return document;
         }
+        public async Task<List<DocumentDTO>> GetDocumentByNameAsync(string docName)
+        {
+            List<DocumentDTO> documents = null;
+            try
+            {
+                //string accessCokie = ViewData["JWToken"] as string;
+                string accessCokie = HttpContext.Session.GetString("JWToken");
+                _client.DefaultRequestHeaders.Add("Cookie", accessCokie);
+
+                HttpResponseMessage res = await _client.GetAsync($"api/Document/{docName}/byname");
+                if (res.IsSuccessStatusCode)
+                {
+                    var result = res.Content.ReadAsStringAsync().Result;
+                    documents = JsonConvert.DeserializeObject<List<DocumentDTO>>(result);
+
+                    foreach(DocumentDTO document in documents)
+                    {
+                        // Get user who updated this document
+                        UserDTO user = await GetUserByIdAsync(document.UpdatedByUserId);
+
+                        // Ser user name who updated in document structure.
+                        document.UpdatedByUserName = $"{user.FirstName} {user.LastName}";
+                    }
+                }
+            }
+            catch
+            {
+            }
+            return documents;
+        }
         public async Task<List<RoleDTO>> GetRolesAsync()
         {
             List<RoleDTO> roles = null;
@@ -382,6 +398,34 @@ namespace Auth.Controllers
             {
             }
             return;
+        }
+        public async Task<List<DocumentDTO>> GetAllDocuments()
+        {
+            List<DocumentDTO> documents = new List<DocumentDTO>();
+
+            // Set token
+            string accessCokie = HttpContext.Session.GetString("JWToken");
+            //accessCokie = ViewData["JWToken"] as string;
+            _client.DefaultRequestHeaders.Add("Cookie", accessCokie);
+
+            // Get Documents
+            HttpResponseMessage res = await _client.GetAsync("api/Document");
+            if (res.IsSuccessStatusCode)
+            {
+                var result = res.Content.ReadAsStringAsync().Result;
+                documents = JsonConvert.DeserializeObject<List<DocumentDTO>>(result);
+
+                foreach (DocumentDTO document in documents)
+                {
+                    // Get user who updated this document
+                    UserDTO user = await GetUserByIdAsync(document.UpdatedByUserId);
+
+                    // Ser user name who updated in document structure.
+                    document.UpdatedByUserName = $"{user.FirstName} {user.LastName}";
+                }
+
+            }
+            return documents;
         }
 
 
