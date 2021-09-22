@@ -13,6 +13,7 @@ using System.Security.Authentication;
 using System.Threading.Tasks;
 using UserControlUI.Models;
 using UserControlUI.ModelsDTO;
+using UserControlUI.Services;
 
 namespace Auth.Controllers
 {
@@ -22,10 +23,12 @@ namespace Auth.Controllers
     {
         private readonly IMapper _mapper;
         private readonly HttpClient _client;
-        public UserController( HttpClient client, IMapper mapper)
+        private readonly IUserService _userService;
+        public UserController( HttpClient client, IMapper mapper, IUserService userService)
         {
             _client = client;
             _mapper = mapper;
+            _userService = userService;
         }
 
         public async Task<IActionResult> Index()
@@ -33,7 +36,8 @@ namespace Auth.Controllers
             List<UserDTO> users = null;
             try
             {
-                users = await GetUsersAsync();
+                string token = HttpContext.Session.GetString("JWToken");
+                users = await _userService.GetUsersAsync(token);
             }
             catch
             {
@@ -47,7 +51,8 @@ namespace Auth.Controllers
             List<UserDTO> users = null;
             try
             {
-                users = await GetUsersAsync();
+                string token = HttpContext.Session.GetString("JWToken");
+                users = await _userService.GetUsersAsync(token);
             }
             catch
             {
@@ -233,27 +238,6 @@ namespace Auth.Controllers
             {
             }
             return role;
-        }
-        public async Task<List<UserDTO>> GetUsersAsync()
-        {
-            List<UserDTO> users = null;
-            try
-            {
-                //string accessCokie = ViewData["JWToken"] as string;
-                string accessCokie = HttpContext.Session.GetString("JWToken");
-                _client.DefaultRequestHeaders.Add("Cookie", accessCokie);
-
-                HttpResponseMessage res = await _client.GetAsync("api/User");
-                if (res.IsSuccessStatusCode)
-                {
-                    var result = res.Content.ReadAsStringAsync().Result;
-                    users = JsonConvert.DeserializeObject<List<UserDTO>>(result);
-                }
-            }
-            catch
-            {
-            }
-            return users;
         }
         [HttpGet]
         public  async Task<IActionResult> Get(UserInput loginInput)

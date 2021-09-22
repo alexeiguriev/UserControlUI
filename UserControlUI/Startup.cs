@@ -11,6 +11,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using UserControlUI.Services;
 
 namespace UserControlUI
 {
@@ -60,6 +61,10 @@ namespace UserControlUI
                 });
             services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://localhost:3160") });
             services.AddAutoMapper(typeof(Startup));
+            //services.AddScoped(sp => new UserService());
+            services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IDocumentService, DocumentService>();
+            //services.AddSingleton<IUserService,UserService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

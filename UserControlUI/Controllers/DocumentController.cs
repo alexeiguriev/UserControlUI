@@ -13,6 +13,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using UserControlUI.Models;
 using UserControlUI.ModelsDTO;
+using UserControlUI.Services;
 
 namespace Auth.Controllers
 {
@@ -20,10 +21,14 @@ namespace Auth.Controllers
     {
         private readonly IMapper _mapper;
         private readonly HttpClient _client;
-        public DocumentController(IMapper mapper, HttpClient client)
+        private readonly IDocumentService _documentService;
+        private readonly IUserService _userService;
+        public DocumentController(IMapper mapper, HttpClient client, IDocumentService documentService,IUserService userService)
         {
             _client = client;
             _mapper = mapper;
+            _documentService = documentService;
+            _userService = userService;
         }
         [Authorize]
         public async Task<IActionResult> Index()
@@ -37,11 +42,14 @@ namespace Auth.Controllers
         [Authorize]
         public async Task<IActionResult> Details(int id)
         {
+            // Set token
+            string accessCokie = HttpContext.Session.GetString("JWToken");
+
             // Get document by index
-            DocumentDTO document = await GetDocumentByIdAsync(id);
+            DocumentDTO document = await _documentService.GetDocumentByIdAsync(accessCokie, id);
 
             // Get all documents with the same date
-            List<DocumentDTO> documents = await GetDocumentByNameAsync(document.Name);
+            List<DocumentDTO> documents = await _documentService.GetDocumentByNameAsync(accessCokie, document.Name);
 
             // Sort Documents by date
             documents = DocumentListConverter.SortByDate(documents);
@@ -63,7 +71,6 @@ namespace Auth.Controllers
 
             // Set token
             string accessCokie = HttpContext.Session.GetString("JWToken");
-            //string accessCokie = ViewData["JWToken"] as string;
 
             _client.DefaultRequestHeaders.Add("Cookie", accessCokie);
 
@@ -142,8 +149,11 @@ namespace Auth.Controllers
             // Store Doc Id
             HttpContext.Session.SetInt32("DocToDeleteId", id);
 
+            // Set token
+            string accessCokie = HttpContext.Session.GetString("JWToken");
+
             // Get document by Id
-            DocumentDTO document = await GetDocumentByIdAsync(id);
+            DocumentDTO document = await _documentService.GetDocumentByIdAsync(accessCokie,id);
 
             return View(document);
         }
@@ -225,84 +235,6 @@ namespace Auth.Controllers
                 document = null;
             }
             return document;
-        }
-        public async Task<UserDTO> GetUserByIdAsync(int id)
-        {
-            UserDTO user = null;
-            try
-            {
-                //string accessCokie = ViewData["JWToken"] as string;
-                string accessCokie = HttpContext.Session.GetString("JWToken");
-                _client.DefaultRequestHeaders.Add("Cookie", accessCokie);
-
-                HttpResponseMessage res = await _client.GetAsync("api/User/" + id);
-                if (res.IsSuccessStatusCode)
-                {
-                    var result = res.Content.ReadAsStringAsync().Result;
-                    user = JsonConvert.DeserializeObject<UserDTO>(result);
-                }
-            }
-            catch
-            {
-            }
-            return user;
-        }
-        public async Task<DocumentDTO> GetDocumentByIdAsync(int id)
-        {
-            DocumentDTO document = null;
-            try
-            {
-                //string accessCokie = ViewData["JWToken"] as string;
-                string accessCokie = HttpContext.Session.GetString("JWToken");
-                _client.DefaultRequestHeaders.Add("Cookie", accessCokie);
-
-                HttpResponseMessage res = await _client.GetAsync("api/Document/" + id);
-                if (res.IsSuccessStatusCode)
-                {
-                    var result = res.Content.ReadAsStringAsync().Result;
-                    document = JsonConvert.DeserializeObject<DocumentDTO>(result);
-
-                    // Get user who updated this document
-                    UserDTO user = await GetUserByIdAsync(document.UpdatedByUserId);
-
-                    // Ser user name who updated in document structure.
-                    document.UpdatedByUserName = $"{user.FirstName} {user.LastName}";
-                }
-            }
-            catch
-            {
-            }
-            return document;
-        }
-        public async Task<List<DocumentDTO>> GetDocumentByNameAsync(string docName)
-        {
-            List<DocumentDTO> documents = null;
-            try
-            {
-                //string accessCokie = ViewData["JWToken"] as string;
-                string accessCokie = HttpContext.Session.GetString("JWToken");
-                _client.DefaultRequestHeaders.Add("Cookie", accessCokie);
-
-                HttpResponseMessage res = await _client.GetAsync($"api/Document/{docName}/byname");
-                if (res.IsSuccessStatusCode)
-                {
-                    var result = res.Content.ReadAsStringAsync().Result;
-                    documents = JsonConvert.DeserializeObject<List<DocumentDTO>>(result);
-
-                    foreach(DocumentDTO document in documents)
-                    {
-                        // Get user who updated this document
-                        UserDTO user = await GetUserByIdAsync(document.UpdatedByUserId);
-
-                        // Ser user name who updated in document structure.
-                        document.UpdatedByUserName = $"{user.FirstName} {user.LastName}";
-                    }
-                }
-            }
-            catch
-            {
-            }
-            return documents;
         }
         public async Task<List<RoleDTO>> GetRolesAsync()
         {
@@ -405,7 +337,6 @@ namespace Auth.Controllers
 
             // Set token
             string accessCokie = HttpContext.Session.GetString("JWToken");
-            //accessCokie = ViewData["JWToken"] as string;
             _client.DefaultRequestHeaders.Add("Cookie", accessCokie);
 
             // Get Documents
@@ -418,7 +349,7 @@ namespace Auth.Controllers
                 foreach (DocumentDTO document in documents)
                 {
                     // Get user who updated this document
-                    UserDTO user = await GetUserByIdAsync(document.UpdatedByUserId);
+                    UserDTO user = await _userService.GetUserByIdAsync(accessCokie,document.UpdatedByUserId);
 
                     // Ser user name who updated in document structure.
                     document.UpdatedByUserName = $"{user.FirstName} {user.LastName}";
