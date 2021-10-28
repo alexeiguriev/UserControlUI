@@ -59,7 +59,7 @@ namespace UserControlUI
 
                     };
                 });
-            services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://localhost:3160") });
+            services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://localhost:6000") });
             services.AddAutoMapper(typeof(Startup));
             //services.AddScoped(sp => new UserService());
             services.AddScoped<IUserService, UserService>();
