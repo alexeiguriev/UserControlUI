@@ -41,7 +41,7 @@
             @Html.DisplayFor(model => model.First().UpdatedByUserName)
         </dd>
         <dd>
-            @Html.ActionLink("Dwonload", "Dwonload", new { id = Model.First().Id })
+            @Html.ActionLink("Download", "Download", new { id = Model.First().Id })
         </dd>
     </dl>
 </div>
@@ -95,7 +95,7 @@
                             @Html.DisplayFor(modelItem => doc.UpdatedByUserName)
                         </td>
                         <td>
-                            @Html.ActionLink("Dwonload", "Dwonload", new { id = doc.Id })
+                            @Html.ActionLink("Download", "Download", new { id = doc.Id })
                         </td>
                     </tr>
                 }

@@ -157,7 +157,7 @@ namespace Auth.Controllers
 
             return View(document);
         }
-        public async Task<IActionResult> Dwonload(int id)
+        public async Task<IActionResult> Download(int id)
         {
 
             DocumentDTO doc = await GetFileFromDbByIdAsync(id);
